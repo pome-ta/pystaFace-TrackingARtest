@@ -5,9 +5,9 @@ import pdbg
 load_framework('ARKit')
 load_framework('SceneKit')
 
-ARSession = ObjCClass('ARSession')
+#ARSession = ObjCClass('ARSession')
 ARSCNView = ObjCClass('ARSCNView')
-ARFaceAnchor = ObjCClass('ARFaceAnchor')
+#ARFaceAnchor = ObjCClass('ARFaceAnchor')
 ARFaceTrackingConfiguration = ObjCClass('ARFaceTrackingConfiguration')
 
 SCNScene = ObjCClass('SCNScene')
@@ -30,10 +30,14 @@ class View(ui.View):
   @on_main_thread
   def view_did_load(self):
     self.scn = ARSCNView.alloc()
+    # 初期画面サイズ指定
     self.scn.initWithFrame_options_(CGRect((0, 0), (100, 100)), None)
+    # 全画面
     self.scn.autoresizingMask = (18)
+    # 統計データ出す
     self.scn.showsStatistics = True
     self.scn.autoenablesDefaultLighting = True
+    # オブジェクトの線やら何やら
     self.scn.debugOptions = (1 << 1) | (1 << 30)
     scene = SCNScene.scene()
     self.scn.scene = scene

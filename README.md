@@ -26,3 +26,8 @@ Pythonista で、AR Face-Tracking してみるテスト
 
 - [Face Detection and Recognition With CoreML and ARKit | BetterProgramming By Omar M’Haimdat](https://betterprogramming.pub/face-detection-and-recognition-with-coreml-and-arkit-8b676b7448be)
     - アプローチがすこ
+
+## `pdbg.py`
+
+`objc-util` のプロパティとかみるやつ
+

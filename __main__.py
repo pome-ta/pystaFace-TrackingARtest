@@ -1,38 +1,32 @@
+from objc_util import create_objc_class, load_framework, ObjCClass, ObjCInstance, CGRect
 import ui
-from objc_util import create_objc_class, load_framework, ObjCClass, ObjCInstance, CGRect, on_main_thread
 
-load_framework('SceneKit')
+
 load_framework('ARKit')
 
-SCNScene = ObjCClass('SCNScene')
 ARSCNView = ObjCClass('ARSCNView')
 ARFaceTrackingConfiguration = ObjCClass('ARFaceTrackingConfiguration')
 ARSCNFaceGeometry = ObjCClass('ARSCNFaceGeometry')
 
 
-def renderer_nodeForAnchor_(_self, _cmd, renderer, nodeFor_anchor):
-  device = view.sceneView.device()
-  faceGeometry = ARSCNFaceGeometry.faceGeometryWithDevice_(device)
-  node = SCNNode.nodeWithGeometry_(faceGeometry)
-  node.geometry().firstMaterial().fillMode = 1
-  return node
+def renderer_didAddNode_forAnchor_(_self, _cmd, renderer, node, anchor):
+  _renderer = ObjCInstance(renderer)
+  faceGeometry = ARSCNFaceGeometry.faceGeometryWithDevice_(_renderer.device())
+  _node = ObjCInstance(node)
+  _node.geometry = faceGeometry
+  _node.geometry().firstMaterial().fillMode = 1
 
 
 def renderer_didUpdateNode_forAnchor_(_self, _cmd, renderer, node, anchor):
-  print('renderer_didUpdateNode_forAnchor_')
   _node = ObjCInstance(node)
-  faceAnchor = ObjCInstance(anchor)
   faceGeometry = _node.geometry()
-  # todo: error 出るから
-  #faceGeometry.updateFromFaceGeometry_(faceAnchor.geometry())
+  faceAnchor = ObjCInstance(anchor)
+  faceGeometry.updateFromFaceGeometry_(faceAnchor.geometry())
 
 
-# xxx: `methods`内の `renderer_nodeForAnchor_` を消すと走る
 myARSCNViewDelegate = create_objc_class(
   'myARSCNViewDelegate',
-  methods=[renderer_nodeForAnchor_,
-    renderer_didUpdateNode_forAnchor_
-  ],
+  methods=[renderer_didAddNode_forAnchor_, renderer_didUpdateNode_forAnchor_],
   protocols=['ARSCNViewDelegate'])
 
 
@@ -45,9 +39,7 @@ class View(ui.View):
     self.view_will_appear()
     self.instance.addSubview_(self.sceneView)
 
-  #@on_main_thread
   def load_view(self):
-    ARFaceTrackingConfiguration.isSupported()
     frame = CGRect((0, 0), (100, 100))
     flex_w, flex_h = (1 << 1), (1 << 4)
     self.sceneView = ARSCNView.alloc()
@@ -55,16 +47,11 @@ class View(ui.View):
     self.sceneView.autoresizingMask = (flex_w | flex_h)
     self.sceneView.showsStatistics = True
     self.sceneView.debugOptions = (1 << 1) | (1 << 31)
-    deledate = myARSCNViewDelegate.alloc().init()
-    self.sceneView.setDelegate_(deledate)
+    self.sceneView.setDelegate_(myARSCNViewDelegate.new())
 
   def view_will_appear(self):
     configuration = ARFaceTrackingConfiguration.new()
-    configuration.maximumNumberOfTrackedFaces = ARFaceTrackingConfiguration.supportedNumberOfTrackedFaces(
-    )
-    configuration.isLightEstimationEnabled = True
-    self.sceneView.session().runWithConfiguration_options_(
-      configuration, (1 << 0) | (1 << 1))
+    self.sceneView.session().runWithConfiguration_(configuration)
 
   def will_close(self):
     self.sceneView.session().pause()

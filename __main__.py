@@ -1,6 +1,5 @@
 import ui
 from objc_util import create_objc_class, load_framework, ObjCClass, ObjCInstance, CGRect, on_main_thread
-import pdbg
 
 load_framework('SceneKit')
 load_framework('ARKit')
@@ -20,16 +19,18 @@ def renderer_nodeForAnchor_(_self, _cmd, renderer, nodeFor_anchor):
 
 
 def renderer_didUpdateNode_forAnchor_(_self, _cmd, renderer, node, anchor):
-  print('hoge')
+  print('renderer_didUpdateNode_forAnchor_')
   _node = ObjCInstance(node)
   faceAnchor = ObjCInstance(anchor)
   faceGeometry = _node.geometry()
+  # todo: error 出るから
   #faceGeometry.updateFromFaceGeometry_(faceAnchor.geometry())
 
 
+# xxx: `methods`内の `renderer_nodeForAnchor_` を消すと走る
 myARSCNViewDelegate = create_objc_class(
   'myARSCNViewDelegate',
-  methods=[  #renderer_nodeForAnchor_,
+  methods=[renderer_nodeForAnchor_,
     renderer_didUpdateNode_forAnchor_
   ],
   protocols=['ARSCNViewDelegate'])
@@ -55,7 +56,7 @@ class View(ui.View):
     self.sceneView.showsStatistics = True
     self.sceneView.debugOptions = (1 << 1) | (1 << 31)
     deledate = myARSCNViewDelegate.alloc().init()
-    #self.sceneView.setDelegate_(deledate)
+    self.sceneView.setDelegate_(deledate)
 
   def view_will_appear(self):
     configuration = ARFaceTrackingConfiguration.new()

@@ -1,7 +1,6 @@
 from objc_util import create_objc_class, load_framework, ObjCClass, ObjCInstance, CGRect
 import ui
 
-import pdbg
 
 load_framework('ARKit')
 
